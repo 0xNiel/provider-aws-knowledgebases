@@ -1,0 +1,35 @@
+apiVersion: awskb.providerawsknowledgebases.crossplane.io/v1alpha1
+kind: KnowledgeBase
+metadata:
+  name: opensearch-serverless-kb
+  annotations:
+    meta.crossplane.io/example: "true"
+spec:
+  forProvider:
+    region: us-east-1
+    name: "opensearch-serverless-knowledge-base"
+    description: "A knowledge base using OpenSearch Serverless for vector storage"
+    roleArn: "arn:aws:iam::123456789012:role/AmazonBedrockExecutionRoleForAgents_TestRole"
+    knowledgeBaseConfiguration:
+      type: "VECTOR"
+      vectorKnowledgeBaseConfiguration:
+        embeddingModelArn: "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"
+        embeddingModelConfiguration:
+          bedrockEmbeddingModelConfiguration:
+            dimensions: 1024
+            embeddingDataType: "FLOAT32"
+    storageConfiguration:
+      type: "OPENSEARCH_SERVERLESS"
+      opensearchServerlessConfiguration:
+        collectionArn: "arn:aws:aoss:us-east-1:123456789012:collection/your-collection-id"
+        vectorIndexName: "bedrock-knowledge-base-default-index"
+        fieldMapping:
+          vectorField: "bedrock-knowledge-base-default-vector"
+          textField: "AMAZON_BEDROCK_TEXT_CHUNK"
+          metadataField: "AMAZON_BEDROCK_METADATA"
+    tags:
+      Environment: "production"
+      Project: "ai-platform"
+      VectorStore: "opensearch-serverless"
+  providerConfigRef:
+    name: role-assumption

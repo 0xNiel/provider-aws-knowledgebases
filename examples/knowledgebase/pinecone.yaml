@@ -1,0 +1,35 @@
+apiVersion: awskb.providerawsknowledgebases.crossplane.io/v1alpha1
+kind: KnowledgeBase
+metadata:
+  name: pinecone-kb
+  annotations:
+    meta.crossplane.io/example: "true"
+spec:
+  forProvider:
+    region: us-east-1
+    name: "pinecone-knowledge-base"
+    description: "A knowledge base using Pinecone for vector storage"
+    roleArn: "arn:aws:iam::123456789012:role/AmazonBedrockExecutionRoleForKnowledgeBase"
+    knowledgeBaseConfiguration:
+      type: "VECTOR"
+      vectorKnowledgeBaseConfiguration:
+        embeddingModelArn: "arn:aws:bedrock:us-east-1::foundation-model/cohere.embed-english-v3"
+        embeddingModelConfiguration:
+          bedrockEmbeddingModelConfiguration:
+            dimensions: 1024
+            embeddingDataType: "FLOAT32"
+    storageConfiguration:
+      type: "PINECONE"
+      pineconeConfiguration:
+        connectionString: "https://my-index-abc123.svc.us-east1-gcp.pinecone.io"
+        credentialsSecretArn: "arn:aws:secretsmanager:us-east-1:123456789012:secret:pinecone-api-key-abc123"
+        fieldMapping:
+          textField: "text"
+          metadataField: "metadata"
+        namespace: "bedrock-knowledge-base"
+    tags:
+      Environment: "staging"
+      Project: "ai-platform"
+      VectorStore: "pinecone"
+  providerConfigRef:
+    name: default

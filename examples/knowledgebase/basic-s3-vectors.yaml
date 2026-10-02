@@ -1,0 +1,26 @@
+apiVersion: awskb.providerawsknowledgebases.crossplane.io/v1alpha1
+kind: KnowledgeBase
+metadata:
+  name: basic-s3-vectors-kb
+  annotations:
+    meta.crossplane.io/example: "true"
+spec:
+  forProvider:
+    region: us-east-1
+    name: "basic-s3-vectors-knowledge-base"
+    description: "A basic knowledge base using S3 vectors for storage"
+    roleArn: "arn:aws:iam::123456789012:role/AmazonBedrockExecutionRoleForAgents_TestRole"
+    knowledgeBaseConfiguration:
+      type: "VECTOR"
+      vectorKnowledgeBaseConfiguration:
+        embeddingModelArn: "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"
+    storageConfiguration:
+      type: "S3_VECTORS"
+      s3VectorsConfiguration:
+        indexArn: "arn:aws:s3vectors:us-east-1:123456789012:bucket/your-vector-bucket/index/bedrock-knowledge-base-default-index"
+        vectorBucketArn: "arn:aws:s3vectors:us-east-1:123456789012:bucket/your-vector-bucket"
+    tags:
+      Environment: "development"
+      Project: "ai-platform"
+  providerConfigRef:
+    name: role-assumption

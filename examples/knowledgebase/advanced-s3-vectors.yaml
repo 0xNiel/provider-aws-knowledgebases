@@ -1,0 +1,35 @@
+apiVersion: awskb.providerawsknowledgebases.crossplane.io/v1alpha1
+kind: KnowledgeBase
+metadata:
+  name: advanced-s3-vectors-kb
+  annotations:
+    meta.crossplane.io/example: "true"
+spec:
+  forProvider:
+    region: us-east-1
+    name: "advanced-s3-vectors-knowledge-base"
+    description: "An advanced knowledge base using S3 vectors with custom configuration"
+    roleArn: "arn:aws:iam::123456789012:role/AmazonBedrockExecutionRoleForKnowledgeBase"
+    knowledgeBaseConfiguration:
+      type: "VECTOR"
+      vectorKnowledgeBaseConfiguration:
+        embeddingModelArn: "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"
+        embeddingModelConfiguration:
+          bedrockEmbeddingModelConfiguration:
+            dimensions: 1024
+            embeddingDataType: "FLOAT32"
+    storageConfiguration:
+      type: "S3_VECTORS"
+      s3VectorsConfiguration:
+        vectorBucketArn: "arn:aws:s3:::my-advanced-knowledge-base-vectors"
+        indexName: "advanced-vector-index"
+        indexArn: "arn:aws:s3:::my-advanced-knowledge-base-vectors/index/advanced-vector-index"
+    clientToken: "unique-client-token-12345"
+    tags:
+      Environment: "production"
+      Project: "ai-platform"
+      VectorStore: "s3-vectors"
+      Owner: "data-science-team"
+      CostCenter: "ml-infrastructure"
+  providerConfigRef:
+    name: default
