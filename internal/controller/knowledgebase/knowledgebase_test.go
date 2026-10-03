@@ -123,8 +123,8 @@ func TestObserve(t *testing.T) {
 	}
 
 	now := time.Now()
-	kbId := "test-kb-id"
-	kbArn := "arn:aws:bedrock:us-east-1:123456789012:knowledge-base/test-kb-id"
+	kbId := "ABCDE12345"
+	kbArn := "arn:aws:bedrock:us-east-1:123456789012:knowledge-base/ABCDE12345"
 
 	cases := map[string]struct {
 		reason string
@@ -154,6 +154,25 @@ func TestObserve(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				mg:  knowledgeBase(),
+			},
+			want: want{
+				o: managed.ExternalObservation{
+					ResourceExists: false,
+				},
+			},
+		},
+		"ExternalNameIsKubernetesName": {
+			reason: "Should return ResourceExists=false without calling AWS when the external name is not a knowledge base ID",
+			fields: fields{
+				client: &MockBedrockAgentClient{
+					MockGetKnowledgeBase: func(ctx context.Context, params *bedrockagent.GetKnowledgeBaseInput, optFns ...func(*bedrockagent.Options)) (*bedrockagent.GetKnowledgeBaseOutput, error) {
+						return nil, errors.New("GetKnowledgeBase should not be called")
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				mg:  knowledgeBase(withExternalName("test-knowledge-base")),
 			},
 			want: want{
 				o: managed.ExternalObservation{
@@ -264,8 +283,8 @@ func TestCreate(t *testing.T) {
 		err error
 	}
 
-	kbId := "test-kb-id"
-	kbArn := "arn:aws:bedrock:us-east-1:123456789012:knowledge-base/test-kb-id"
+	kbId := "ABCDE12345"
+	kbArn := "arn:aws:bedrock:us-east-1:123456789012:knowledge-base/ABCDE12345"
 
 	cases := map[string]struct {
 		reason string
@@ -365,8 +384,8 @@ func TestUpdate(t *testing.T) {
 		err error
 	}
 
-	kbId := "test-kb-id"
-	kbArn := "arn:aws:bedrock:us-east-1:123456789012:knowledge-base/test-kb-id"
+	kbId := "ABCDE12345"
+	kbArn := "arn:aws:bedrock:us-east-1:123456789012:knowledge-base/ABCDE12345"
 
 	cases := map[string]struct {
 		reason string
@@ -466,7 +485,7 @@ func TestDelete(t *testing.T) {
 		err error
 	}
 
-	kbId := "test-kb-id"
+	kbId := "ABCDE12345"
 
 	cases := map[string]struct {
 		reason string
