@@ -32,4 +32,4 @@ spec:
       Project: "ai-platform"
       VectorStore: "opensearch-serverless"
   providerConfigRef:
-    name: role-assumption
+    name: default

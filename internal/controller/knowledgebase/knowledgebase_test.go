@@ -28,14 +28,18 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/0xNiel/provider-aws-knowledgebases/apis/awskb/v1alpha1"
+	apisv1alpha1 "github.com/0xNiel/provider-aws-knowledgebases/apis/v1alpha1"
 )
 
 // MockBedrockAgentClient is a mock implementation of the BedrockAgentClient interface
@@ -67,7 +71,7 @@ func knowledgeBase(m ...func(*v1alpha1.KnowledgeBase)) *v1alpha1.KnowledgeBase {
 	cr := &v1alpha1.KnowledgeBase{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "KnowledgeBase",
-			APIVersion: "awskb.template.crossplane.io/v1alpha1",
+			APIVersion: "awskb.providerawsknowledgebases.crossplane.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test-kb",
@@ -736,6 +740,95 @@ func TestIsUpToDate(t *testing.T) {
 			got := e.isUpToDate(tt.cr, tt.kb)
 			if got != tt.expect {
 				t.Errorf("isUpToDate() = %v, want %v", got, tt.expect)
+			}
+		})
+	}
+}
+
+func TestConnect(t *testing.T) {
+	providerConfig := func(source xpv1.CredentialsSource) test.ObjectFn {
+		return func(obj client.Object) error {
+			pc := obj.(*apisv1alpha1.ProviderConfig)
+			pc.Spec.Credentials.Source = source
+			if source == xpv1.CredentialsSourceSecret {
+				pc.Spec.Credentials.SecretRef = &xpv1.SecretKeySelector{
+					SecretReference: xpv1.SecretReference{Namespace: "crossplane-system", Name: "aws-creds"},
+					Key:             "credentials",
+				}
+			}
+			return nil
+		}
+	}
+
+	secret := func(data string) test.ObjectFn {
+		return func(obj client.Object) error {
+			obj.(*corev1.Secret).Data = map[string][]byte{"credentials": []byte(data)}
+			return nil
+		}
+	}
+
+	get := func(pc test.ObjectFn, s test.ObjectFn) test.MockGetFn {
+		return func(_ context.Context, _ client.ObjectKey, obj client.Object) error {
+			switch obj.(type) {
+			case *apisv1alpha1.ProviderConfig:
+				return pc(obj)
+			case *corev1.Secret:
+				return s(obj)
+			}
+			return errors.New("unexpected object")
+		}
+	}
+
+	cases := map[string]struct {
+		reason  string
+		kube    client.Client
+		wantErr bool
+	}{
+		"InjectedIdentity": {
+			reason: "Should build a client from the default AWS credential chain without reading a Secret",
+			kube: &test.MockClient{MockGet: get(
+				providerConfig(xpv1.CredentialsSourceInjectedIdentity),
+				func(client.Object) error { return errors.New("Secret should not be read") },
+			)},
+		},
+		"SecretWithINICredentials": {
+			reason: "Should build a client from an INI credentials file in a Secret",
+			kube: &test.MockClient{MockGet: get(
+				providerConfig(xpv1.CredentialsSourceSecret),
+				secret("[default]\naws_access_key_id = AKIAIOSFODNN7EXAMPLE\naws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n"),
+			)},
+		},
+		"SecretWithoutAccessKey": {
+			reason: "Should return an error when the Secret has no access key",
+			kube: &test.MockClient{MockGet: get(
+				providerConfig(xpv1.CredentialsSourceSecret),
+				secret("[default]\nrole_arn = arn:aws:iam::123456789012:role/test-role\n"),
+			)},
+			wantErr: true,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{
+				kube:  tc.kube,
+				usage: resource.TrackerFn(func(context.Context, resource.Managed) error { return nil }),
+			}
+			cr := knowledgeBase(func(cr *v1alpha1.KnowledgeBase) {
+				cr.SetProviderConfigReference(&xpv1.Reference{Name: "default"})
+			})
+			got, err := c.Connect(context.Background(), cr)
+			if tc.wantErr {
+				if err == nil {
+					t.Errorf("\n%s\nc.Connect(...): want error, got nil", tc.reason)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("\n%s\nc.Connect(...): unexpected error: %v", tc.reason, err)
+			}
+			if e, ok := got.(*external); !ok || e.client == nil {
+				t.Errorf("\n%s\nc.Connect(...): want external with a client, got %#v", tc.reason, got)
 			}
 		})
 	}

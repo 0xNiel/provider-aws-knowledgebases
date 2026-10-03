@@ -159,6 +159,17 @@ func newBedrockAgentClient(ctx context.Context, region string, creds []byte) (Be
 	return bedrockagent.NewFromConfig(cfg), nil
 }
 
+// newInjectedIdentityClient creates a Bedrock Agent client from the default AWS
+// credential chain instead of an explicit credentials file
+func newInjectedIdentityClient(ctx context.Context, region string) (BedrockAgentClient, error) {
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+
+	return bedrockagent.NewFromConfig(cfg), nil
+}
+
 // Setup adds a controller that reconciles KnowledgeBase managed resources.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(v1alpha1.KnowledgeBaseGroupKind)
@@ -234,6 +245,17 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	cd := pc.Spec.Credentials
+
+	// InjectedIdentity uses the identity the provider pod already has (IRSA,
+	// EKS Pod Identity or an instance profile) via the default AWS chain.
+	if cd.Source == xpv1.CredentialsSourceInjectedIdentity {
+		client, err := newInjectedIdentityClient(ctx, cr.Spec.ForProvider.Region)
+		if err != nil {
+			return nil, errors.Wrap(err, errNewClient)
+		}
+		return &external{client: client}, nil
+	}
+
 	data, err := resource.CommonCredentialExtractor(ctx, cd.Source, c.kube, cd.CommonCredentialSelectors)
 	if err != nil {
 		return nil, errors.Wrap(err, errGetCreds)

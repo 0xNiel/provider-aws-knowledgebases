@@ -1,0 +1,14 @@
+# Uses the identity the provider pod already has, through the default AWS
+# credential chain: IRSA, EKS Pod Identity or an EC2 instance profile.
+# No Secret is needed. Grant the IAM role to the provider's service account
+# (for IRSA, with a DeploymentRuntimeConfig that sets the
+# eks.amazonaws.com/role-arn annotation).
+apiVersion: providerawsknowledgebases.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: default
+  annotations:
+    meta.crossplane.io/example: "true"
+spec:
+  credentials:
+    source: InjectedIdentity

@@ -9,7 +9,7 @@ Before using these examples, ensure you have:
 1. A Crossplane cluster with the AWS Knowledge Bases provider installed
 2. Appropriate AWS IAM roles and permissions configured
 3. Required AWS resources (S3 buckets, OpenSearch collections, etc.) created
-4. A ProviderConfig configured with AWS credentials
+4. A ProviderConfig named `default` (see [../provider](../provider/))
 
 ## Examples
 
@@ -102,7 +102,8 @@ All examples include tags for:
 ## Next Steps
 
 After creating a knowledge base, you can:
-1. Create data sources to populate the knowledge base
+1. Create data sources to populate the knowledge base (in the AWS console or
+   CLI; this provider doesn't manage data sources yet)
 2. Associate the knowledge base with Bedrock agents
 3. Use the knowledge base for retrieval-augmented generation (RAG)
 

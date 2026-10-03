@@ -42,17 +42,21 @@ spec:
   package: ghcr.io/<you>/provider-aws-knowledgebases:<version>
 ```
 
-Next, create a `ProviderConfig`. The provider reads an INI-style AWS
-credentials file from a Secret, with the profile named `[default]`:
+Next, create a `ProviderConfig` named `default`. There are three examples in
+[`examples/provider/`](examples/provider/); pick one:
 
-- [`config.yaml`](examples/provider/config.yaml): static access key and
-  secret key.
+- [`config.yaml`](examples/provider/config.yaml): an access key and secret key
+  in a Secret, as an INI credentials file with a `[default]` profile.
 - [`role-assumption-config.yaml`](examples/provider/role-assumption-config.yaml):
   the same, plus `role_arn` and `role_session_name`. The provider assumes that
   role through STS before calling Bedrock.
+- [`injected-identity-config.yaml`](examples/provider/injected-identity-config.yaml):
+  no Secret. The provider uses its pod's own identity (IRSA, EKS Pod Identity
+  or an EC2 instance profile).
 
-Each example contains its Secret with placeholder values. Encode your own
-credentials file, paste the output over the `credentials:` value, then apply:
+The Secret-based examples contain their Secret with placeholder values. Encode
+your own credentials file, paste the output over the `credentials:` value, then
+apply:
 
 ```shell
 cat > credentials.ini <<EOF
@@ -65,18 +69,13 @@ base64 < credentials.ini
 kubectl apply -f examples/provider/config.yaml
 ```
 
-Two other examples in `examples/provider/` don't work yet:
-[`iam-role-config.yaml`](examples/provider/iam-role-config.yaml) uses a JSON
-credential format the provider doesn't parse, and
-[`environment-config.yaml`](examples/provider/environment-config.yaml)
-expects instance profile or IRSA credentials, which aren't supported. See
-[Status](#status).
+The [provider examples README](examples/provider/README.md) covers IRSA setup
+and the IAM permissions the provider needs.
 
 ## Quick start
 
 Create the Bedrock service role and the S3 vector bucket and index first, then
-fill in their ARNs. Set `providerConfigRef.name` to the ProviderConfig you
-applied (`default` for `config.yaml`). This is
+fill in their ARNs. This is
 [`examples/knowledgebase/basic-s3-vectors.yaml`](examples/knowledgebase/basic-s3-vectors.yaml):
 
 ```yaml
@@ -105,7 +104,7 @@ spec:
       Environment: "development"
       Project: "ai-platform"
   providerConfigRef:
-    name: role-assumption
+    name: default
 ```
 
 ```shell
@@ -137,9 +136,8 @@ work, but:
 - `Ready` becomes `True` as soon as the knowledge base exists, even while
   Bedrock still reports it as `CREATING` or `FAILED`. Check
   `status.atProvider.status`.
-- Credentials must be an INI file in a Secret. The `Environment` and
-  `InjectedIdentity` credential sources (instance profile, IRSA) aren't
-  supported.
+- Credentials come from an INI file in a Secret or from `InjectedIdentity`.
+  Role assumption only works with the Secret source.
 
 ## Development
 

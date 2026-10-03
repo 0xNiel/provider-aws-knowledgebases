@@ -21,7 +21,7 @@ data:
 apiVersion: providerawsknowledgebases.crossplane.io/v1alpha1
 kind: ProviderConfig
 metadata:
-  name: role-assumption
+  name: default
   annotations:
     meta.crossplane.io/example: "true"
 spec:

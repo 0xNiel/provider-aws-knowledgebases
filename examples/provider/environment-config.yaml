@@ -1,9 +1,0 @@
-apiVersion: providerawsknowledgebases.crossplane.io/v1alpha1
-kind: ProviderConfig
-metadata:
-  name: environment
-  annotations:
-    meta.crossplane.io/example: "true"
-spec:
-  credentials:
-    source: Environment

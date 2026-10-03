@@ -23,4 +23,4 @@ spec:
       Environment: "development"
       Project: "ai-platform"
   providerConfigRef:
-    name: role-assumption
+    name: default
