@@ -22,7 +22,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
-	providerawsknowledgebasesv1alpha1 "github.com/crossplane/provider-providerawsknowledgebases/apis/v1alpha1"
+	providerawsknowledgebasesv1alpha1 "github.com/0xNiel/provider-aws-knowledgebases/apis/v1alpha1"
 )
 
 func TestSetupFunctionExists(t *testing.T) {

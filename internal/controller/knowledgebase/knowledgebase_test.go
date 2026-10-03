@@ -35,7 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-providerawsknowledgebases/apis/awskb/v1alpha1"
+	"github.com/0xNiel/provider-aws-knowledgebases/apis/awskb/v1alpha1"
 )
 
 // MockBedrockAgentClient is a mock implementation of the BedrockAgentClient interface

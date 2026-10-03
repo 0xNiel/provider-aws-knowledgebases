@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package apis contains Kubernetes API for the ProviderAwsKnowledgebases provider.
+// Package apis contains Kubernetes API for the AWS Knowledge Bases provider.
 package apis
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	awskbv1alpha1 "github.com/crossplane/provider-providerawsknowledgebases/apis/awskb/v1alpha1"
-	providerawsknowledgebasesv1alpha1 "github.com/crossplane/provider-providerawsknowledgebases/apis/v1alpha1"
+	awskbv1alpha1 "github.com/0xNiel/provider-aws-knowledgebases/apis/awskb/v1alpha1"
+	providerawsknowledgebasesv1alpha1 "github.com/0xNiel/provider-aws-knowledgebases/apis/v1alpha1"
 )
 
 func init() {

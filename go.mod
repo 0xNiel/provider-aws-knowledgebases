@@ -1,4 +1,4 @@
-module github.com/crossplane/provider-providerawsknowledgebases
+module github.com/0xNiel/provider-aws-knowledgebases
 
 go 1.23.0
 

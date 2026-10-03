@@ -22,7 +22,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/crossplane/provider-providerawsknowledgebases/apis"
+	"github.com/0xNiel/provider-aws-knowledgebases/apis"
 )
 
 func TestAPISchemeRegistration(t *testing.T) {

@@ -47,9 +47,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/statemetrics"
 
-	"github.com/crossplane/provider-providerawsknowledgebases/apis/awskb/v1alpha1"
-	apisv1alpha1 "github.com/crossplane/provider-providerawsknowledgebases/apis/v1alpha1"
-	"github.com/crossplane/provider-providerawsknowledgebases/internal/features"
+	"github.com/0xNiel/provider-aws-knowledgebases/apis/awskb/v1alpha1"
+	apisv1alpha1 "github.com/0xNiel/provider-aws-knowledgebases/apis/v1alpha1"
+	"github.com/0xNiel/provider-aws-knowledgebases/internal/features"
 )
 
 const (

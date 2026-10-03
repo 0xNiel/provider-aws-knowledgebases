@@ -1,6 +1,6 @@
 # ====================================================================================
 # Setup Project
-PROJECT_NAME := provider-providerawsknowledgebases
+PROJECT_NAME := provider-aws-knowledgebases
 PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
@@ -31,7 +31,7 @@ GOLANGCILINT_VERSION = 2.1.2
 # ====================================================================================
 # Setup Images
 
-IMAGES = provider-providerawsknowledgebases
+IMAGES = provider-aws-knowledgebases
 -include build/makelib/imagelight.mk
 
 # ====================================================================================
@@ -41,12 +41,12 @@ XPKG_REG_ORGS ?= xpkg.upbound.io/crossplane
 # NOTE(hasheddan): skip promoting on xpkg.upbound.io as channel tags are
 # inferred.
 XPKG_REG_ORGS_NO_PROMOTE ?= xpkg.upbound.io/crossplane
-XPKGS = provider-providerawsknowledgebases
+XPKGS = provider-aws-knowledgebases
 -include build/makelib/xpkg.mk
 
 # NOTE(hasheddan): we force image building to happen prior to xpkg build so that
 # we ensure image is present in daemon.
-xpkg.build.provider-providerawsknowledgebases: do.build.images
+xpkg.build.provider-aws-knowledgebases: do.build.images
 
 fallthrough: submodules
 	@echo Initial setup complete. Running make again . . .
@@ -95,10 +95,10 @@ dev: $(KIND) $(KUBECTL)
 	@$(INFO) Creating kind cluster
 	@$(KIND) create cluster --name=$(PROJECT_NAME)-dev
 	@$(KUBECTL) cluster-info --context kind-$(PROJECT_NAME)-dev
-	@$(INFO) Installing Provider ProviderAwsKnowledgebases CRDs
+	@$(INFO) Installing AWS Knowledge Bases provider CRDs
 	@$(KUBECTL) apply -R -f package/crds
 	@$(KUBECTL) apply -f examples/provider/role-assumption-config.yaml
-	@$(INFO) Starting Provider ProviderAwsKnowledgebases controllers
+	@$(INFO) Starting AWS Knowledge Bases provider controllers
 	@$(GO) run cmd/provider/main.go --debug
 	
 

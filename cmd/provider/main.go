@@ -45,16 +45,16 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/statemetrics"
 
-	"github.com/crossplane/provider-providerawsknowledgebases/apis"
-	"github.com/crossplane/provider-providerawsknowledgebases/apis/v1alpha1"
-	providerawsknowledgebases "github.com/crossplane/provider-providerawsknowledgebases/internal/controller"
-	"github.com/crossplane/provider-providerawsknowledgebases/internal/features"
-	"github.com/crossplane/provider-providerawsknowledgebases/internal/version"
+	"github.com/0xNiel/provider-aws-knowledgebases/apis"
+	"github.com/0xNiel/provider-aws-knowledgebases/apis/v1alpha1"
+	providerawsknowledgebases "github.com/0xNiel/provider-aws-knowledgebases/internal/controller"
+	"github.com/0xNiel/provider-aws-knowledgebases/internal/features"
+	"github.com/0xNiel/provider-aws-knowledgebases/internal/version"
 )
 
 func main() {
 	var (
-		app            = kingpin.New(filepath.Base(os.Args[0]), "ProviderAwsKnowledgebases support for Crossplane.").DefaultEnvars()
+		app            = kingpin.New(filepath.Base(os.Args[0]), "AWS Bedrock Knowledge Bases support for Crossplane.").DefaultEnvars()
 		debug          = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
 		leaderElection = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").Envar("LEADER_ELECTION").Bool()
 
@@ -73,7 +73,7 @@ func main() {
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	zl := zap.New(zap.UseDevMode(*debug))
-	log := logging.NewLogrLogger(zl.WithName("provider-providerawsknowledgebases"))
+	log := logging.NewLogrLogger(zl.WithName("provider-aws-knowledgebases"))
 	if *debug {
 		// The controller-runtime is *very* verbose even at info level, so we only
 		// provide it a real logger when we're running in debug mode.
@@ -103,13 +103,13 @@ func main() {
 		// server. Switching to Leases only and longer leases appears to
 		// alleviate this.
 		LeaderElection:             *leaderElection,
-		LeaderElectionID:           "crossplane-leader-election-provider-providerawsknowledgebases",
+		LeaderElectionID:           "crossplane-leader-election-provider-aws-knowledgebases",
 		LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
 		LeaseDuration:              func() *time.Duration { d := 60 * time.Second; return &d }(),
 		RenewDeadline:              func() *time.Duration { d := 50 * time.Second; return &d }(),
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
-	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add ProviderAwsKnowledgebases APIs to scheme")
+	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add AWS Knowledge Bases APIs to scheme")
 
 	metricRecorder := managed.NewMRMetricRecorder()
 	stateMetrics := statemetrics.NewMRStateMetrics()
@@ -164,11 +164,11 @@ func main() {
 		clo := controller.ChangeLogOptions{
 			ChangeLogger: managed.NewGRPCChangeLogger(
 				changelogsv1alpha1.NewChangeLogServiceClient(conn),
-				managed.WithProviderVersion(fmt.Sprintf("provider-providerawsknowledgebases:%s", version.Version))),
+				managed.WithProviderVersion(fmt.Sprintf("provider-aws-knowledgebases:%s", version.Version))),
 		}
 		o.ChangeLogOptions = &clo
 	}
 
-	kingpin.FatalIfError(providerawsknowledgebases.Setup(mgr, o), "Cannot setup ProviderAwsKnowledgebases controllers")
+	kingpin.FatalIfError(providerawsknowledgebases.Setup(mgr, o), "Cannot setup AWS Knowledge Bases controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
 }
